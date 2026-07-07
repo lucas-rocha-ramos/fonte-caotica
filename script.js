@@ -1,103 +1,126 @@
 // ============================================
-// GERADOR DE FONTE CAÓTICA - SCRIPT COMPLETO
+// GERADOR DE FONTE CAÓTICA - VERSÃO 2.0
 // ============================================
 
-let fonteOriginal = null;
-let nomeOriginal = '';
-let glifosModificados = {};
+console.log('🎭 Gerador de Fonte Caótica - Iniciado!');
+
+let fonteCarregada = null;
+let nomeFonte = '';
+let dadosFonte = null;
 
 // ============================================
 // ELEMENTOS
 // ============================================
 const fileInput = document.getElementById('fileInput');
 const uploadZone = document.getElementById('uploadZone');
-const preview = document.getElementById('preview');
-const nomeFonte = document.getElementById('nomeFonte');
-const totalGlifos = document.getElementById('totalGlifos');
-const fonteInfo = document.getElementById('fonteInfo');
-const btnExportar = document.getElementById('btnExportar');
+const btnUpload = document.getElementById('btnUpload');
 const statusDiv = document.getElementById('status');
-
-// Controles
-const caos = document.getElementById('caos');
-const tamanhoMin = document.getElementById('tamanhoMin');
-const tamanhoMax = document.getElementById('tamanhoMax');
-const rotacao = document.getElementById('rotacao');
-const coresAleatorias = document.getElementById('coresAleatorias');
+const fonteInfo = document.getElementById('fonteInfo');
+const nomeFonteSpan = document.getElementById('nomeFonte');
+const totalGlifosSpan = document.getElementById('totalGlifos');
+const tamanhoArquivoSpan = document.getElementById('tamanhoArquivo');
+const preview = document.getElementById('preview');
+const btnExportar = document.getElementById('btnExportar');
 const textoPreview = document.getElementById('textoPreview');
 
 // ============================================
-// UPLOAD DA FONTE
+// EVENTO DE UPLOAD - VERSÃO SIMPLIFICADA
 // ============================================
-uploadZone.addEventListener('click', () => fileInput.click());
 
-uploadZone.addEventListener('dragover', (e) => {
+// Clique no botão de upload
+btnUpload.addEventListener('click', function(e) {
     e.preventDefault();
-    uploadZone.classList.add('dragover');
+    e.stopPropagation();
+    fileInput.click();
 });
 
-uploadZone.addEventListener('dragleave', () => {
-    uploadZone.classList.remove('dragover');
+// Clique na área de upload
+uploadZone.addEventListener('click', function(e) {
+    // Evita conflito com o botão
+    if (e.target === btnUpload || e.target.closest('.btn')) return;
+    fileInput.click();
 });
 
-uploadZone.addEventListener('drop', (e) => {
-    e.preventDefault();
-    uploadZone.classList.remove('dragover');
-    const files = e.dataTransfer.files;
-    if (files.length > 0) {
-        fileInput.files = files;
-        processarArquivo(files[0]);
+// Quando o arquivo for selecionado
+fileInput.addEventListener('change', function(e) {
+    console.log('📁 Arquivo selecionado:', this.files[0]?.name);
+    
+    if (this.files.length === 0) {
+        mostrarStatus('⚠️ Nenhum arquivo selecionado', 'erro');
+        return;
     }
-});
-
-fileInput.addEventListener('change', function() {
-    if (this.files.length > 0) {
-        processarArquivo(this.files[0]);
-    }
+    
+    const file = this.files[0];
+    processarArquivo(file);
 });
 
 // ============================================
 // PROCESSAR ARQUIVO
 // ============================================
 function processarArquivo(file) {
+    console.log('📂 Processando:', file.name, file.size, 'bytes');
+    
+    // Verifica extensão
     const extensao = file.name.split('.').pop().toLowerCase();
     if (!['ttf', 'otf', 'woff', 'woff2'].includes(extensao)) {
-        mostrarStatus('❌ Formato não suportado! Use .ttf, .otf, .woff ou .woff2', 'erro');
+        mostrarStatus(`❌ Formato "${extensao}" não suportado! Use .ttf, .otf, .woff ou .woff2`, 'erro');
         return;
     }
-
+    
     mostrarStatus('⏳ Carregando fonte...', 'info');
-
+    
     const reader = new FileReader();
+    
     reader.onload = function(event) {
         try {
             const arrayBuffer = event.target.result;
+            console.log('✅ Arquivo lido, tamanho:', arrayBuffer.byteLength);
             
-            // Usa opentype.js para parsear
+            // Verifica se opentype está disponível
+            if (typeof opentype === 'undefined') {
+                mostrarStatus('❌ Biblioteca opentype.js não carregada!', 'erro');
+                console.error('opentype não definido!');
+                return;
+            }
+            
+            // Tenta parsear
             opentype.parse(arrayBuffer, function(err, font) {
                 if (err) {
-                    mostrarStatus('❌ Erro ao carregar: ' + err.message, 'erro');
+                    console.error('Erro no parse:', err);
+                    mostrarStatus('❌ Erro ao processar fonte: ' + err.message, 'erro');
                     return;
                 }
                 
-                fonteOriginal = font;
-                nomeOriginal = font.names.fullName?.en || file.name.replace(/\.[^.]+$/, '');
+                console.log('✅ Fonte parseada com sucesso!');
+                console.log('📊 Nome:', font.names.fullName?.en);
+                console.log('📊 Glifos:', font.glyphs.length);
                 
-                nomeFonte.textContent = nomeOriginal;
-                totalGlifos.textContent = font.glyphs.length;
+                fonteCarregada = font;
+                nomeFonte = font.names.fullName?.en || file.name.replace(/\.[^.]+$/, '');
+                dadosFonte = arrayBuffer;
+                
+                // Atualiza informações
+                nomeFonteSpan.textContent = nomeFonte;
+                totalGlifosSpan.textContent = font.glyphs.length;
+                tamanhoArquivoSpan.textContent = (file.size / 1024).toFixed(1) + ' KB';
                 fonteInfo.style.display = 'flex';
                 btnExportar.disabled = false;
                 
                 mostrarStatus('✅ Fonte carregada com sucesso!', 'sucesso');
                 
-                // Gera os glifos modificados
+                // Gera preview
                 gerarGlifosModificados();
                 atualizarPreview();
             });
             
         } catch (error) {
+            console.error('Erro:', error);
             mostrarStatus('❌ Erro: ' + error.message, 'erro');
         }
+    };
+    
+    reader.onerror = function() {
+        mostrarStatus('❌ Erro ao ler o arquivo', 'erro');
     };
     
     reader.readAsArrayBuffer(file);
@@ -106,51 +129,64 @@ function processarArquivo(file) {
 // ============================================
 // GERAR GLIFOS MODIFICADOS
 // ============================================
+let glifosModificados = {};
+
 function gerarGlifosModificados() {
-    if (!fonteOriginal) return;
+    if (!fonteCarregada) return;
     
     glifosModificados = {};
     
-    const caosNivel = parseInt(caos.value) / 100;
-    const minSize = parseInt(tamanhoMin.value);
-    const maxSize = parseInt(tamanhoMax.value);
-    const maxRot = parseInt(rotacao.value);
-    const usarCores = coresAleatorias.checked;
+    const caosNivel = parseInt(document.getElementById('caos').value) / 100;
+    const minSize = parseInt(document.getElementById('tamanhoMin').value);
+    const maxSize = parseInt(document.getElementById('tamanhoMax').value);
+    const maxRot = parseInt(document.getElementById('rotacao').value);
+    const usarCores = document.getElementById('coresAleatorias').checked;
     
-    const cores = ['#e74c3c', '#2ecc71', '#3498db', '#f39c12', '#9b59b6', '#1abc9c', '#e67e22', '#e84393', '#00b894', '#6c5ce7'];
+    const cores = ['#e74c3c', '#2ecc71', '#3498db', '#f39c12', '#9b59b6', 
+                   '#1abc9c', '#e67e22', '#e84393', '#00b894', '#6c5ce7'];
     
-    fonteOriginal.glyphs.forEach(glyph => {
+    // Pega todos os glifos com unicode
+    fonteCarregada.glyphs.forEach(glyph => {
         if (glyph.unicode && glyph.unicode > 32) {
+            // Tamanho aleatório
             const tamanho = minSize + Math.random() * (maxSize - minSize);
-            const rotacaoGlyph = (Math.random() - 0.5) * maxRot * 2;
+            
+            // Rotação aleatória
+            const rotacao = (Math.random() - 0.5) * maxRot * 2;
+            
+            // Cor aleatória
             const cor = usarCores ? cores[Math.floor(Math.random() * cores.length)] : '#2d3436';
-            const offsetY = (Math.random() - 0.5) * 8;
+            
+            // Deslocamento vertical
+            const offsetY = (Math.random() - 0.5) * 12;
             
             glifosModificados[glyph.unicode] = {
                 tamanho: tamanho,
-                rotacao: rotacaoGlyph,
+                rotacao: rotacao,
                 cor: cor,
                 offsetY: offsetY,
                 char: String.fromCharCode(glyph.unicode)
             };
         }
     });
+    
+    console.log('✅ Glifos modificados:', Object.keys(glifosModificados).length);
 }
 
 // ============================================
 // ATUALIZAR PREVIEW
 // ============================================
 function atualizarPreview() {
-    if (!fonteOriginal) {
-        // Preview com fonte padrão
-        const texto = textoPreview.value || 'CARREGUE UMA FONTE!';
-        preview.innerHTML = '';
+    const texto = textoPreview.value || 'FONTE CAÓTICA!';
+    preview.innerHTML = '';
+    
+    if (!fonteCarregada) {
+        // Preview simples sem fonte
         texto.split('').forEach(char => {
             const span = document.createElement('span');
             span.textContent = char;
             if (char !== ' ') {
-                const tamanho = 20 + Math.random() * 30;
-                span.style.fontSize = tamanho + 'px';
+                span.style.fontSize = (20 + Math.random() * 30) + 'px';
                 span.style.transform = `rotate(${(Math.random() - 0.5) * 20}deg)`;
                 span.style.color = ['#e74c3c', '#2ecc71', '#3498db', '#f39c12', '#9b59b6'][Math.floor(Math.random() * 5)];
             }
@@ -159,11 +195,10 @@ function atualizarPreview() {
         return;
     }
     
-    // Gera novos glifos modificados se os controles mudaram
-    gerarGlifosModificados();
-    
-    const texto = textoPreview.value || 'ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz 0123456789 !?@#';
-    preview.innerHTML = '';
+    // Gera novos glifos se não existirem
+    if (Object.keys(glifosModificados).length === 0) {
+        gerarGlifosModificados();
+    }
     
     texto.split('').forEach(char => {
         const codigo = char.charCodeAt(0);
@@ -171,20 +206,19 @@ function atualizarPreview() {
         
         if (char === ' ') {
             span.textContent = ' ';
-            span.style.width = '12px';
+            span.style.width = '15px';
             preview.appendChild(span);
             return;
         }
         
         span.textContent = char;
         
-        // Aplica modificações se o glifo existir
         if (glifosModificados[codigo]) {
             const mod = glifosModificados[codigo];
             span.style.fontSize = mod.tamanho + 'px';
             span.style.transform = `rotate(${mod.rotacao}deg) translateY(${mod.offsetY}px)`;
             span.style.color = mod.cor;
-            span.style.fontWeight = 700;
+            span.style.fontWeight = 'bold';
         } else {
             span.style.fontSize = '24px';
             span.style.color = '#2d3436';
@@ -195,45 +229,39 @@ function atualizarPreview() {
 }
 
 // ============================================
-// EXPORTAR FONTE (CRIA .TTF)
+// EXPORTAR FONTE
 // ============================================
 function exportarFonte() {
-    if (!fonteOriginal) {
+    if (!fonteCarregada) {
         mostrarStatus('⚠️ Carregue uma fonte primeiro!', 'erro');
         return;
     }
     
-    mostrarStatus('⏳ Gerando fonte caótica... Aguarde.', 'info');
+    mostrarStatus('⏳ Gerando arquivo...', 'info');
     
     try {
-        // Clona a fonte usando o método toBuffer/fromBuffer
-        const buffer = fonteOriginal.toArrayBuffer();
+        // Usa os dados originais
+        const buffer = dadosFonte;
         
-        // Cria um novo arquivo com metadados modificados
-        const nomeFonteCaotica = nomeOriginal + ' Caótica';
-        
-        // Modifica o nome da fonte no cabeçalho
-        const dataView = new DataView(buffer);
-        
-        // Encontra a tabela 'name' e modifica
-        // (Esta é uma simplificação - a modificação real é mais complexa)
-        
-        // Cria o blob para download
+        // Cria o blob
         const blob = new Blob([buffer], { type: 'font/ttf' });
         const url = URL.createObjectURL(blob);
+        
+        // Download
         const link = document.createElement('a');
         link.href = url;
-        link.download = `${nomeOriginal.replace(/\s+/g, '_')}_Caotica.ttf`;
+        link.download = `${nomeFonte.replace(/\s+/g, '_')}_Caotica.ttf`;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-        URL.revokeObjectURL(url);
+        
+        setTimeout(() => URL.revokeObjectURL(url), 10000);
         
         mostrarStatus('✅ Fonte baixada! Instale o arquivo .ttf no seu sistema.', 'sucesso');
         
     } catch (error) {
-        mostrarStatus('❌ Erro ao gerar: ' + error.message, 'erro');
-        console.error(error);
+        console.error('Erro ao exportar:', error);
+        mostrarStatus('❌ Erro ao exportar: ' + error.message, 'erro');
     }
 }
 
@@ -241,17 +269,15 @@ function exportarFonte() {
 // RESETAR
 // ============================================
 function resetarTudo() {
-    fonteOriginal = null;
-    nomeOriginal = '';
+    fonteCarregada = null;
+    nomeFonte = '';
+    dadosFonte = null;
     glifosModificados = {};
     fonteInfo.style.display = 'none';
     btnExportar.disabled = true;
-    preview.innerHTML = 'Carregue uma fonte para começar...';
-    preview.style.color = '#b2bec3';
-    preview.style.fontSize = '20px';
+    preview.innerHTML = '<span style="color:#b2bec3;">Carregue uma fonte para começar</span>';
     statusDiv.style.display = 'none';
     fileInput.value = '';
-    uploadZone.classList.remove('dragover');
 }
 
 // ============================================
@@ -265,7 +291,7 @@ function mostrarStatus(msg, tipo) {
     if (tipo === 'sucesso' || tipo === 'info') {
         setTimeout(() => {
             statusDiv.style.display = 'none';
-        }, 6000);
+        }, 5000);
     }
 }
 
@@ -287,15 +313,15 @@ document.querySelectorAll('.controles input').forEach(input => {
             document.getElementById('valCores').textContent = this.checked ? 'Sim' : 'Não';
         }
         
-        // Atualiza preview
-        if (fonteOriginal) {
+        // Atualiza preview se tiver fonte
+        if (fonteCarregada) {
             gerarGlifosModificados();
             atualizarPreview();
         }
     });
 });
 
-// Enter no campo de texto atualiza preview
+// Enter para atualizar preview
 textoPreview.addEventListener('keyup', function(e) {
     if (e.key === 'Enter') {
         atualizarPreview();
@@ -303,13 +329,7 @@ textoPreview.addEventListener('keyup', function(e) {
 });
 
 // ============================================
-// INICIALIZAÇÃO
+// TESTE INICIAL
 // ============================================
-console.log('🎭 Gerador de Fonte Caótica carregado!');
-console.log('📌 Carregue um arquivo .ttf ou .otf para começar.');
-console.log('🔧 Ajuste os controles e veja o preview em tempo real.');
-
-// Preview inicial
-preview.innerHTML = 'Carregue uma fonte para começar...';
-preview.style.color = '#b2bec3';
-preview.style.fontSize = '20px';
+console.log('✅ Script carregado!');
+console.log('📌 Clique em "Escolher Arquivo" para carregar uma fonte.');
