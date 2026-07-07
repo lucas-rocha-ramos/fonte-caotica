@@ -21,12 +21,6 @@ body {
     max-width: 900px;
     width: 100%;
     box-shadow: 0 30px 80px rgba(0,0,0,0.3);
-    animation: fadeIn 0.5s ease;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
 }
 
 header {
@@ -49,24 +43,15 @@ header p {
 .upload-zone {
     border: 3px dashed #b2bec3;
     border-radius: 20px;
-    padding: 50px 20px;
+    padding: 40px 20px;
     text-align: center;
-    cursor: pointer;
     transition: all 0.3s;
     background: #f8f9fa;
-    position: relative;
 }
 
 .upload-zone:hover {
     border-color: #6c5ce7;
     background: #f0edff;
-    transform: scale(1.02);
-}
-
-.upload-zone.dragover {
-    border-color: #6c5ce7;
-    background: #e8e4ff;
-    transform: scale(1.05);
 }
 
 .upload-icon {
@@ -87,9 +72,39 @@ header p {
     display: none;
 }
 
+/* Status */
+.status {
+    margin: 20px 0;
+    padding: 15px 20px;
+    border-radius: 12px;
+    display: none;
+    font-weight: 500;
+}
+
+.status.sucesso {
+    display: block;
+    background: #d4edda;
+    color: #155724;
+    border: 2px solid #c3e6cb;
+}
+
+.status.erro {
+    display: block;
+    background: #f8d7da;
+    color: #721c24;
+    border: 2px solid #f5c6cb;
+}
+
+.status.info {
+    display: block;
+    background: #d1ecf1;
+    color: #0c5460;
+    border: 2px solid #bee5eb;
+}
+
 /* Fonte Info */
 .fonte-info {
-    margin-top: 20px;
+    margin: 20px 0;
     padding: 15px 20px;
     background: #d4edda;
     border-radius: 12px;
@@ -107,15 +122,15 @@ header p {
 
 /* Controles */
 .controles {
-    margin: 30px 0;
+    margin: 25px 0;
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 20px;
+    gap: 15px;
 }
 
 .grupo {
     background: #f8f9fa;
-    padding: 15px 20px;
+    padding: 15px;
     border-radius: 12px;
     border: 2px solid #e9ecef;
 }
@@ -166,15 +181,15 @@ header p {
     padding: 15px;
     background: white;
     border-radius: 10px;
-    font-family: 'Comic Sans MS', cursive, sans-serif;
     word-wrap: break-word;
-    line-height: 1.8;
+    line-height: 2;
     border: 1px solid #dee2e6;
+    font-size: 24px;
 }
 
 .preview-texto span {
     display: inline-block;
-    transition: all 0.3s ease;
+    transition: all 0.2s;
 }
 
 #textoPreview {
@@ -202,25 +217,18 @@ header p {
 }
 
 .btn {
-    padding: 14px 30px;
+    padding: 14px 35px;
     border: none;
     border-radius: 12px;
     font-size: 16px;
     font-weight: 700;
     cursor: pointer;
     transition: all 0.3s ease;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
 }
 
 .btn:hover {
     transform: translateY(-2px);
     box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-}
-
-.btn:active {
-    transform: translateY(0);
 }
 
 .btn-primary {
@@ -256,36 +264,6 @@ header p {
     background: #d63031;
 }
 
-/* Status */
-.status {
-    margin: 20px 0;
-    padding: 15px 20px;
-    border-radius: 12px;
-    display: none;
-    font-weight: 500;
-}
-
-.status.sucesso {
-    display: block;
-    background: #d4edda;
-    color: #155724;
-    border: 2px solid #c3e6cb;
-}
-
-.status.erro {
-    display: block;
-    background: #f8d7da;
-    color: #721c24;
-    border: 2px solid #f5c6cb;
-}
-
-.status.info {
-    display: block;
-    background: #d1ecf1;
-    color: #0c5460;
-    border: 2px solid #bee5eb;
-}
-
 /* Instruções */
 .instrucoes {
     margin-top: 25px;
@@ -314,20 +292,16 @@ header p {
     .container {
         padding: 20px;
     }
-
     .controles {
         grid-template-columns: 1fr;
     }
-
     .botoes {
         flex-direction: column;
     }
-
     .btn {
-        justify-content: center;
         width: 100%;
+        text-align: center;
     }
-
     .fonte-info {
         flex-direction: column;
         text-align: center;
