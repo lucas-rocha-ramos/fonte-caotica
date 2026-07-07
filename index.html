@@ -10,104 +10,92 @@
     <div class="container">
         <header>
             <h1>🎭 Gerador de Fonte Caótica</h1>
-            <p>Transforme qualquer fonte em uma versão desordenada e cômica!</p>
+            <p>Transforme qualquer fonte em uma versão desordenada!</p>
         </header>
 
-        <!-- Upload -->
+        <!-- ÁREA DE UPLOAD -->
         <div class="upload-zone" id="uploadZone">
             <div class="upload-icon">📁</div>
-            <h3>Arraste ou clique para enviar sua fonte</h3>
-            <p>Suporta: .ttf, .otf, .woff, .woff2</p>
+            <h3>Clique ou arraste sua fonte aqui</h3>
+            <p>Formatos: .ttf, .otf, .woff, .woff2</p>
             <input type="file" id="fileInput" accept=".ttf,.otf,.woff,.woff2">
+            <button id="btnUpload" class="btn btn-primary" style="margin-top:15px;">
+                📂 Escolher Arquivo
+            </button>
         </div>
 
-        <!-- Info da Fonte -->
-        <div class="fonte-info" id="fonteInfo" style="display:none;">
+        <!-- STATUS -->
+        <div id="status" class="status"></div>
+
+        <!-- INFORMAÇÕES DA FONTE -->
+        <div id="fonteInfo" style="display:none;" class="fonte-info">
             <span>✅ Fonte: <strong id="nomeFonte">-</strong></span>
-            <span>Glifos: <strong id="totalGlifos">0</strong></span>
+            <span>📊 Glifos: <strong id="totalGlifos">0</strong></span>
+            <span>📏 Tamanho: <strong id="tamanhoArquivo">0 KB</strong></span>
         </div>
 
-        <!-- Controles -->
+        <!-- CONTROLES -->
         <div class="controles">
             <div class="grupo">
-                <label>
-                    🔀 Intensidade do Caos
-                    <span id="valCaos">50%</span>
-                </label>
+                <label>🔀 Intensidade do Caos <span id="valCaos">50%</span></label>
                 <input type="range" id="caos" min="0" max="100" value="50">
             </div>
-
             <div class="grupo">
-                <label>
-                    📏 Tamanho Mínimo
-                    <span id="valMin">12px</span>
-                </label>
+                <label>📏 Tamanho Mínimo <span id="valMin">12px</span></label>
                 <input type="range" id="tamanhoMin" min="8" max="30" value="12">
             </div>
-
             <div class="grupo">
-                <label>
-                    📐 Tamanho Máximo
-                    <span id="valMax">48px</span>
-                </label>
+                <label>📐 Tamanho Máximo <span id="valMax">48px</span></label>
                 <input type="range" id="tamanhoMax" min="20" max="80" value="48">
             </div>
-
             <div class="grupo">
-                <label>
-                    🔄 Rotação Máxima
-                    <span id="valRot">15°</span>
-                </label>
+                <label>🔄 Rotação Máxima <span id="valRot">15°</span></label>
                 <input type="range" id="rotacao" min="0" max="45" value="15">
             </div>
-
-            <div class="grupo">
-                <label>
-                    🎨 Cores Aleatórias
-                    <span id="valCores">Sim</span>
-                </label>
+            <div class="grupo" style="grid-column: 1 / -1;">
+                <label>🎨 Cores Aleatórias <span id="valCores">Sim</span></label>
                 <input type="checkbox" id="coresAleatorias" checked>
             </div>
         </div>
 
-        <!-- Preview -->
+        <!-- PREVIEW -->
         <div class="preview">
             <h3>👀 Preview</h3>
             <div class="preview-texto" id="preview">
-                <span>A</span><span>B</span><span>C</span>
-                <span>1</span><span>2</span><span>3</span>
-                <span>!</span><span>?</span>
+                <span style="color:#b2bec3;">Carregue uma fonte para começar</span>
             </div>
-            <div style="margin-top: 10px;">
-                <input type="text" id="textoPreview" value="FONTE CAÓTICA!" style="padding:10px;border-radius:8px;border:2px solid #ddd;width:100%;font-size:16px;">
-                <button onclick="atualizarPreview()" style="margin-top:10px;padding:8px 20px;background:#6c5ce7;color:white;border:none;border-radius:8px;cursor:pointer;">Atualizar</button>
+            <div style="margin-top: 15px;">
+                <input type="text" id="textoPreview" value="FONTE CAÓTICA!" 
+                       style="width:100%;padding:12px;border:2px solid #ddd;border-radius:8px;font-size:16px;">
+                <button onclick="atualizarPreview()" 
+                        style="margin-top:10px;padding:10px 25px;background:#6c5ce7;color:white;border:none;border-radius:8px;cursor:pointer;font-weight:bold;">
+                    🔄 Atualizar
+                </button>
             </div>
         </div>
 
-        <!-- Ações -->
+        <!-- BOTÕES -->
         <div class="botoes">
-            <button class="btn btn-primary" onclick="atualizarPreview()">🔄 Atualizar Preview</button>
             <button class="btn btn-success" id="btnExportar" disabled onclick="exportarFonte()">
                 ⬇️ Baixar Fonte .TTF
             </button>
             <button class="btn btn-danger" onclick="resetarTudo()">🗑️ Resetar</button>
         </div>
 
-        <!-- Status -->
-        <div id="status" class="status"></div>
-
-        <!-- Instruções -->
+        <!-- INSTRUÇÕES -->
         <div class="instrucoes">
-            <h4>📖 Como instalar a fonte:</h4>
+            <h4>📖 Como usar:</h4>
             <ol>
-                <li>Baixe o arquivo .ttf gerado</li>
-                <li>Clique duas vezes no arquivo</li>
-                <li>Clique em "Instalar"</li>
-                <li>Use em qualquer programa!</li>
+                <li>Clique em "Escolher Arquivo" e selecione sua fonte</li>
+                <li>Ajuste os controles para o nível de caos desejado</li>
+                <li>Veja o preview em tempo real</li>
+                <li>Clique em "Baixar Fonte .TTF" para salvar</li>
+                <li>Instale a fonte no seu sistema</li>
             </ol>
         </div>
     </div>
 
+    <!-- Carrega a biblioteca opentype.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/opentype.js/1.3.4/opentype.min.js"></script>
     <script src="script.js"></script>
 </body>
